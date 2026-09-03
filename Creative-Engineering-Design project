@@ -1,0 +1,23 @@
+# Creative-Engineering-Design 프로젝트
+
+## 프로젝트 소개
+본 프로젝트는 일상생활의 불편함을 해소하고 효율성을 높이기 위한 창의적인 공학적 해결책을 제시하기 위해 시작되었습니다. 
+
+## 구현할 기능
+- [ ] 핵심 기능 알고리즘 구현하기
+- [ ] 사용자 인터페이스(UI) 구성하기
+- [ ] 실행 화면 캡처 및 테스트 추가하기
+- [ ] README 최종 정리하기
+
+## 참고 자료
+- 프로젝트 아이디어 참고: [GitHub 공식 문서](https://docs.github.com)
+
+## 참고 이미지
+![프로젝트 예시 이미지](https://via.placeholder.com/600x300)
+
+## 실행 방법
+```text
+# 프로젝트 클론 및 실행 안내
+git clone [https://github.com/logmsh12/Creative-Engineering-Design.git](https://github.com/logmsh12/Creative-Engineering-Design.git)
+cd Creative-Engineering-Design
+# 추후 실행 명령어를 추가할 예정입니다.
