@@ -12,7 +12,9 @@
 
 ## 참고 자료
 
-- [참고한 서비스](https://example.com)
+- 참고 프로젝트: [SuperCMMS GitHub Repository](https://github.com/SuperCMMS/Open-Source-CMMS)
+- 참고 프로젝트: [CMMS & OEE 모니터링 시스템](https://github.com/opensourceoeesoftware/CMMS-OEE-Software)
+- 참고 문헌: [GitHub Docs - 마크다운 안내](https://docs.github.com)
 
 ## 실행 방법
 
