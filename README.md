@@ -1,4 +1,4 @@
-# 프로젝트 이름:맞춤형 조립 PC 견적 추천 및 호환성 체크 챗봇 프로
+# 프로젝트 이름:맞춤형 조립 PC 견적 추천 및 호환성 체크 챗봇 프로젝
 
 ## 프로젝트 소개
 
@@ -24,98 +24,72 @@
 추가예정입니다.
 
 ## 코드 블록
-def load_api_key(filepath="mykey.txt"):
-    if not os.path.exists(filepath):
-        print(f"❌ 오류: '{filepath}' 파일이 없습니다. API 키를 담은 텍스트 파일을 같은 폴더에 생성해주세요.")
-        return None
-        
-    with open(filepath, "r", encoding="utf-8") as file:
-        return file.read().strip()
+from openai import OpenAI
+import os
 
-# 2. LLM API 호출 함수
-def chat_with_llm(user_input, chat_history, api_key):
-    # API 엔드포인트 주소 (Mindlogic API 가이드에 맞춰 수정 필요)
-    url = "https://api.mindlogic.ai/v1/chat/completions" 
-    
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json"
-    }
-    
-    # 시스템 프롬프트 설정 (다이어트 & 치팅데이 식단 추천 역할 부여)
-    system_prompt = {
-        "role": "system", 
-        "content": """당신은 사용자의 식단을 관리하고 맛있는 음식을 추천해주는 '푸드 큐레이터'입니다. 
-        사용자가 '다이어트'를 언급하면 칼로리가 낮고 영양가가 높은 식단을 랜덤하게 1가지 추천하고, 
-        '치팅데이'를 언급하면 스트레스를 풀 수 있는 아주 맛있고 만족감 높은 속세의 음식을 1가지 추천해주세요.
-        추천할 때는 다음 양식을 지켜주세요:
-        1. 메뉴 이름
-        2. 추천하는 이유
-        3. 대략적인 영양 정보나 칼로리 (치팅데이의 경우 맛있게 먹는 팁으로 대체 가능)"""
-    }
-    
-    # 대화 기록 구성 (문맥 유지를 위해 이전 대화 포함)
-    messages = [system_prompt] + chat_history + [{"role": "user", "content": user_input}]
-    
-    data = {
-        "model": "factchat-model-name", # 단가표에 명시된 실제 모델명으로 변경하세요 (예: factchat-3.5-turbo 등)
-        "messages": messages,
-        "max_tokens": 800,
-        "temperature": 0.8 # 다양한 랜덤 메뉴 추천을 위해 온도를 약간 높게 설정
-    }
-    
+def get_api_key(filepath="mykey.txt"):
     try:
-        response = requests.post(url, headers=headers, data=json.dumps(data))
-        response.raise_for_status() 
-        result = response.json()
-        
-        # 3주차 계획인 '토큰 사용량 로깅'을 위한 데이터 추출 예시 (Grafana 연동용)
-        # usage = result.get('usage', {})
-        # print(f"[System Log] Prompt: {usage.get('prompt_tokens')}, Completion: {usage.get('completion_tokens')}")
-        
-        return result['choices'][0]['message']['content']
-        
-    except Exception as e:
-        return f"API 통신 중 오류가 발생했습니다: {e}"
+        with open(filepath, "r", encoding="utf-8") as file:
+            return file.read().strip()
+    except FileNotFoundError:
+        print(f"오류: '{filepath}' 파일을 찾을 수 없습니다. 같은 폴더에 키 파일을 준비해주세요.")
+        return None
 
-# 3. 메인 챗봇 실행 루프
-def main():
-    api_key = load_api_key("mykey.txt")
-    if not api_key:
-        return
+# 1. API 키 불러오기
+api_key = get_api_key()
 
-    print("="*60)
-    print("🥗 다이어트 & 🍕 치팅데이 맞춤 식단 추천 챗봇을 시작합니다!")
-    print("   ('다이어트 메뉴 추천해줘' 또는 '오늘 치팅데이 메뉴 골라줘'라고 입력해보세요)")
-    print("   (종료하시려면 '종료', 'exit', 'quit' 중 하나를 입력하세요)")
-    print("="*60)
+if api_key:
+    # 2. 클라이언트 설정 (제공해주신 가이드 문서 기준)
+    client = OpenAI(
+        api_key=api_key,
+        base_url="https://factchat-cloud.mindlogic.ai/v1/gateway"
+    )
+
+    print("==================================================")
+    print(" 🛠️  맞춤형 PC 견적 전문가 챗봇이 시작되었습니다! ")
+    print(" (종료를 원하시면 '종료', 'exit', 'quit'를 입력하세요)")
+    print("==================================================\n")
     
-    chat_history = [] 
-    
+    # 3. 챗봇 페르소나 부여 (System Prompt)
+    system_prompt = """
+    당신은 20년 경력의 조립 PC 견적 전문가입니다. 다음 원칙을 엄격하게 지켜 답변해주세요:
+    1. 사용자의 '예산'과 '주요 사용 목적'을 가장 먼저 파악하세요.
+    2. 부품 추천 시 CPU, 메인보드, RAM, 그래픽카드(VGA), SSD, 파워, 케이스를 포함해야 합니다.
+    3. CPU 소켓과 메인보드의 호환성, 그래픽카드와 파워 용량의 호환성을 반드시 체크하고 설명해주세요.
+    4. 견적을 제안할 때는 보기 쉽게 마크다운 표(Markdown Table) 형식으로 정리해서 보여주세요.
+    5. 친절하지만 전문적인 말투(예: ~입니다, ~을 권장합니다)를 사용하세요.
+    """
+
+    messages = [{"role": "system", "content": system_prompt}]
+
+    # 4. 대화 루프 실행
     while True:
-        user_input = input("\n👤 당신: ")
+        user_input = input("👤 사용자: ")
         
         if user_input.lower() in ['종료', 'exit', 'quit']:
-            print("🤖 챗봇: 대화를 종료합니다. 오늘도 맛있는 하루 보내세요!")
+            print("👋 챗봇을 종료합니다.")
             break
             
-        print("🤖 챗봇: (메뉴를 신중하게 고르는 중...)")
+        messages.append({"role": "user", "content": user_input})
         
-        # API 호출 및 답변 받기
-        bot_response = chat_with_llm(user_input, chat_history, api_key)
-        print(f"\n🤖 챗봇:\n{bot_response}")
-        
-        # 대화 기록 업데이트 
-        chat_history.append({"role": "user", "content": user_input})
-        chat_history.append({"role": "assistant", "content": bot_response})
-        
-        # 메모리가 너무 길어지는 것을 방지 (최근 6개 대화만 유지)
-        if len(chat_history) > 6:
-            chat_history = chat_history[-6:]
-
-if __name__ == "__main__":
-    main()
-
+        try:
+            print("🤖 챗봇이 견적을 구성하는 중입니다...\n")
+            
+            # API 호출 (모델명은 claude-sonnet-5 사용)
+            response = client.chat.completions.create(
+                model="claude-sonnet-5", 
+                messages=messages
+            )
+            
+            bot_reply = response.choices[0].message.content
+            print(f"🛠️ 전문가:\n{bot_reply}\n")
+            print("-" * 50)
+            
+            # 대화 기록 유지
+            messages.append({"role": "assistant", "content": bot_reply})
+            
+        except Exception as e:
+            print(f"⚠️ API 호출 중 오류가 발생했습니다: {e}")
 ## 실행 방법
 
 ​```text
