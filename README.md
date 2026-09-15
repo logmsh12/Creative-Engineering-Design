@@ -23,11 +23,9 @@
 ## 이미지
 추가예정입니다.
 
-## 코드 블록
-from openai import OpenAI
-import os
-
+# 1. API 키 불러오기
 def get_api_key(filepath="mykey.txt"):
+    """mykey.txt 파일에서 API 키를 읽어오는 함수"""
     try:
         with open(filepath, "r", encoding="utf-8") as file:
             return file.read().strip()
@@ -35,11 +33,15 @@ def get_api_key(filepath="mykey.txt"):
         print(f"오류: '{filepath}' 파일을 찾을 수 없습니다. 같은 폴더에 키 파일을 준비해주세요.")
         return None
 
-# 1. API 키 불러오기
-api_key = get_api_key()
+## 코드 블록
+from openai import OpenAI
+import os
+
+# 1. 외부 함수(또는 위에서 선언한 함수)를 통해 API 키 불러오기
+api_key = get_api_key("mykey.txt")
 
 if api_key:
-    # 2. 클라이언트 설정 (제공해주신 가이드 문서 기준)
+    # 2. FactChat API 클라이언트 설정 (OpenAI 호환)
     client = OpenAI(
         api_key=api_key,
         base_url="https://factchat-cloud.mindlogic.ai/v1/gateway"
@@ -90,6 +92,7 @@ if api_key:
             
         except Exception as e:
             print(f"⚠️ API 호출 중 오류가 발생했습니다: {e}")
+
 ## 실행 방법
 
 ​```text
