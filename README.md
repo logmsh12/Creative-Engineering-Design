@@ -21,7 +21,8 @@
 
 
 ## 이미지
-추가예정입니다.
+추가예정입니다.<img width="1344" height="1509" alt="image" src="https://github.com/user-attachments/assets/46838afa-1925-4a2b-9cab-fd8a8a307999" />
+
 
 # 1. API 키 불러오기
 from pathlib import Path
