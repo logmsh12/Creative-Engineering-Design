@@ -48,37 +48,13 @@ SYSTEM_PROMPT = """
 from openai import OpenAI
 
 # 서버 주소 및 모델 이름 세팅
-1.
+
 API_BASE_URL = "https://factchat-cloud.mindlogic.ai/v1/gateway"
 MODEL_NAME = "gpt-6-astra"
 
-def get_api_key():
-    # mykey.txt 파일에서 암호를 읽어오는 함수
-    key_path = Path(__file__).resolve().parent / "mykey.txt"
-    try:
-        key = key_path.read_text(encoding="utf-8-sig").strip()
-    # ... (에러 처리 생략)
-    return key
-
-2.
-    def call_api(self, request_messages):
-        try:
-            # 인공지능 서버에 "견적 짜줘!" 라고 요청 (최대 60초 대기)
-            response = self.client.chat.completions.create(
-                model=MODEL_NAME, messages=request_messages, timeout=60.0
-            )
-            # 서버에서 받은 답변을 추출
-            reply = response.choices[0].message.content
-            
-            # 성공적으로 답변을 받으면 화면에 띄우기 위해 Queue(results)에 넣음
-            self.results.put((True, reply, request_messages))
-        except Exception as exc:
-            # 인터넷이 끊기거나 크레딧이 없으면 에러 메시지를 Queue에 넣음
-            detail = str(exc).replace(self.client.api_key, "[API 키 숨김]")
-            self.results.put((False, detail, request_messages))
 
 ## 코드 블록
-1. 로컬 데이터베이스 생성 및 읽
+1. 로컬 데이터베이스 생성 및 읽기
 import sqlite3
 
 def setup_and_read_db():
