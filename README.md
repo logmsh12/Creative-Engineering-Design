@@ -26,9 +26,6 @@
 <img width="738" height="766" alt="창의공학설계 캡쳐3" src="https://github.com/user-attachments/assets/997aab4d-5faa-48ca-8ffa-44118ec7cc87" />
 
 
-# 1. API 키 불러오기
-from pathlib import Path
-from openai import OpenAI
 
 # 기존 코드의 설정입니다. 계정에서 이용 가능한 모델인지 확인하세요.
 API_BASE_URL = "https://factchat-cloud.mindlogic.ai/v1/gateway"
@@ -45,23 +42,87 @@ SYSTEM_PROMPT = """
 4. 견적은 마크다운 표로 정리하고 예상 총액을 안내하세요.
 5. 실시간 가격을 조회하지 않았다면 추정 가격임을 명시하세요.
 6. 친절하고 전문적인 말투를 사용하세요.
-"""
+
+
+# 1. API 키 불러오기
+from openai import OpenAI
+
+# 서버 주소 및 모델 이름 세팅
+1.
+API_BASE_URL = "https://factchat-cloud.mindlogic.ai/v1/gateway"
+MODEL_NAME = "gpt-6-astra"
 
 def get_api_key():
+    # mykey.txt 파일에서 암호를 읽어오는 함수
     key_path = Path(__file__).resolve().parent / "mykey.txt"
     try:
         key = key_path.read_text(encoding="utf-8-sig").strip()
-    except FileNotFoundError:
-        raise ValueError(f"API 키 파일을 찾을 수 없습니다.\n{key_path}\n\n이 위치에 mykey.txt를 만들어 API 키만 입력하세요.") from None
-    except (OSError, UnicodeError):
-        raise ValueError("mykey.txt를 읽을 수 없습니다. 파일 권한과 UTF-8 인코딩을 확인하세요.") from None
-    if not key:
-        raise ValueError("mykey.txt가 비어 있습니다. API 키를 입력하세요.")
+    # ... (에러 처리 생략)
     return key
+
+2.
+    def call_api(self, request_messages):
+        try:
+            # 인공지능 서버에 "견적 짜줘!" 라고 요청 (최대 60초 대기)
+            response = self.client.chat.completions.create(
+                model=MODEL_NAME, messages=request_messages, timeout=60.0
+            )
+            # 서버에서 받은 답변을 추출
+            reply = response.choices[0].message.content
+            
+            # 성공적으로 답변을 받으면 화면에 띄우기 위해 Queue(results)에 넣음
+            self.results.put((True, reply, request_messages))
+        except Exception as exc:
+            # 인터넷이 끊기거나 크레딧이 없으면 에러 메시지를 Queue에 넣음
+            detail = str(exc).replace(self.client.api_key, "[API 키 숨김]")
+            self.results.put((False, detail, request_messages))
 
 ## 코드 블록
-from pathlib import Path
-from openai import OpenAI
+1. 로컬 데이터베이스 생성 및 읽
+import sqlite3
+
+def setup_and_read_db():
+    # 내 컴퓨터 안에 pc_parts.db 라는 로컬 엑셀 파일(DB) 생성
+    conn = sqlite3.connect('pc_parts.db')
+    cursor = conn.cursor()
+
+    # parts_data 리스트에 적힌 부품과 가격을 DB에 밀어 넣음
+    parts_data = [
+        ('CPU', '인텔 코어i3-14세대 14100 (랩터레이크 리프레시)', 212010),
+        # ... (부품 리스트 생략)
+    ]
+    cursor.executemany('INSERT INTO parts (category, name, price) VALUES (?, ?, ?)', parts_data)
+    conn.commit()
+
+    # DB에 저장된 내용을 인공지능이 읽을 수 있게 텍스트로 변환
+    cursor.execute("SELECT category, name, price FROM parts")
+    # ... (텍스트 변환 생략)
+    return price_text
+
+2. 화면 ui 구성 및 동작제어
+   import tkinter as tk
+
+class PCQuoteApp:
+    def __init__(self, root, client):
+        # ...
+        # 시스템 프롬프트(규칙) + 로컬 DB에서 불러온 가격표를 합침
+        dynamic_prompt = SYSTEM_PROMPT + setup_and_read_db()
+        self.messages = [{"role": "system", "content": dynamic_prompt}]
+
+        # 화면 크기, 제목, 배경색 설정
+        root.title("맞춤형 PC 견적 전문가")
+        root.geometry("900x720")
+        # ... (채팅창 텍스트 박스, 전송 버튼, 입력창 만드는 코드 생략)
+
+    def send_message(self, event=None):
+        # 사용자가 엔터를 치거나 전송 버튼을 누르면 작동
+        # 입력한 글자를 가져와서 화면에 띄우고, call_api 함수를 실행시킴
+
+    def poll_results(self):
+        # API 통신이 끝날 때까지 0.1초마다 계속 확인하다가
+        # 답변이 도착하면 채팅창 화면에 인공지능의 답변을 그려줌
+
+    
 
 # 기존 코드의 설정입니다. 계정에서 이용 가능한 모델인지 확인하세요.
 API_BASE_URL = "https://factchat-cloud.mindlogic.ai/v1/gateway"
@@ -78,19 +139,7 @@ SYSTEM_PROMPT = """
 4. 견적은 마크다운 표로 정리하고 예상 총액을 안내하세요.
 5. 실시간 가격을 조회하지 않았다면 추정 가격임을 명시하세요.
 6. 친절하고 전문적인 말투를 사용하세요.
-"""
-
-def get_api_key():
-    key_path = Path(__file__).resolve().parent / "mykey.txt"
-    try:
-        key = key_path.read_text(encoding="utf-8-sig").strip()
-    except FileNotFoundError:
-        raise ValueError(f"API 키 파일을 찾을 수 없습니다.\n{key_path}\n\n이 위치에 mykey.txt를 만들어 API 키만 입력하세요.") from None
-    except (OSError, UnicodeError):
-        raise ValueError("mykey.txt를 읽을 수 없습니다. 파일 권한과 UTF-8 인코딩을 확인하세요.") from None
-    if not key:
-        raise ValueError("mykey.txt가 비어 있습니다. API 키를 입력하세요.")
-    return key
+   
 
 ## 실행 방법
 
