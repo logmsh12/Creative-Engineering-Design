@@ -22,6 +22,8 @@
 
 ## 이미지
 추가예정입니다.<img width="1344" height="1509" alt="image" src="https://github.com/user-attachments/assets/46838afa-1925-4a2b-9cab-fd8a8a307999" />
+<img width="738" height="766" alt="창의공학설계 캡쳐4" src="https://github.com/user-attachments/assets/55335552-7230-4ef0-8d6f-1d4d1537ec39" />
+<img width="738" height="766" alt="창의공학설계 캡쳐3" src="https://github.com/user-attachments/assets/997aab4d-5faa-48ca-8ffa-44118ec7cc87" />
 
 
 # 1. API 키 불러오기
